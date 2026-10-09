@@ -74,12 +74,12 @@ These commands create a **new** identity and contract instance; they do not rede
 stellar keys generate specula-admin --network testnet --fund --secure-store
 stellar contract build --locked
 stellar contract deploy \
-  --wasm target/wasm32v1-none/release/specula_contract.wasm \
+  --wasm target/wasm32v1-none/release/sentinel_contract.wasm \
   --source-account specula-admin \
   --network testnet \
-  --alias specula_contract
+  --alias sentinel_contract
 stellar contract invoke \
-  --id specula_contract \
+  --id sentinel_contract \
   --source-account specula-admin \
   --network testnet -- \
   initialize --admin specula-admin --default-threshold 70
@@ -101,7 +101,7 @@ Set the resulting contract ID as the backend's `CONTRACT_ID`. Keep its Horizon a
 
 - `src/lib.rs` — contract entry points, storage keys, authorization, threshold checks, event publication, and latest-flag lookup.
 - `src/test.rs` — contract behavior tests using Soroban test utilities.
-- `Cargo.toml` / `Cargo.lock` — Rust and Soroban SDK dependencies.
+- `Cargo.toml` — Rust and Soroban SDK dependencies.
 - `.github/workflows/ci.yml` — Wasm build, unit tests, and Clippy checks.
 
 ## Prerequisites
