@@ -5,7 +5,7 @@
 cargo build --target wasm32-unknown-unknown --release
 cargo fmt --all -- --check
 cargo test
-cargo clippy --all-targets
+cargo clippy --all-targets -- -D warnings
 ```
 
 ## Before opening a PR
@@ -14,5 +14,5 @@ cargo clippy --all-targets
 - Update README.md if you changed public behavior.
 
 ## Related repos
-- [sentinel-backend](https://github.com/Stellar-Sentinel/sentinel-backend) — reads contract events and exposes them through its API; it does not currently submit transactions.
-- [sentinel-frontend](https://github.com/Stellar-Sentinel/sentinel-frontend) — dashboard displaying screening results and backend-provided contract events.
+- [specula-api](https://github.com/Specula-Labs/specula-api) — reads contract events and exposes them through its API; it does not currently submit transactions.
+- [specula-app](https://github.com/Specula-Labs/specula-app) — dashboard displaying screening results and backend-provided contract events.
