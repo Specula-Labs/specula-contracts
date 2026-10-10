@@ -153,3 +153,58 @@ fn agent_cannot_submit_score_above_100() {
     client.authorize_agent(&admin, &agent);
     client.flag_anomaly(&agent, &subject, &101);
 }
+
+#[test]
+fn set_threshold_accepts_zero() {
+    let env = Env::default();
+    let contract_id = env.register(StellarSentinel, ());
+    let client = StellarSentinelClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    env.mock_all_auths();
+
+    client.initialize(&admin, &75);
+    client.set_threshold(&admin, &0);
+    assert_eq!(client.get_threshold(), 0);
+}
+
+#[test]
+fn set_threshold_accepts_max_score() {
+    let env = Env::default();
+    let contract_id = env.register(StellarSentinel, ());
+    let client = StellarSentinelClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    env.mock_all_auths();
+
+    client.initialize(&admin, &75);
+    client.set_threshold(&admin, &100);
+    assert_eq!(client.get_threshold(), 100);
+}
+
+#[test]
+#[should_panic(expected = "threshold must be between 0 and 100")]
+fn set_threshold_rejects_above_max_score() {
+    let env = Env::default();
+    let contract_id = env.register(StellarSentinel, ());
+    let client = StellarSentinelClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    env.mock_all_auths();
+
+    client.initialize(&admin, &75);
+    client.set_threshold(&admin, &101);
+}
+
+#[test]
+fn zero_threshold_accepts_zero_score() {
+    let env = Env::default();
+    let contract_id = env.register(StellarSentinel, ());
+    let client = StellarSentinelClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    let agent = Address::generate(&env);
+    let subject = Address::generate(&env);
+    env.mock_all_auths();
+
+    client.initialize(&admin, &0);
+    client.authorize_agent(&admin, &agent);
+    client.flag_anomaly(&agent, &subject, &0);
+    assert_eq!(client.get_latest_flag(&subject).unwrap().score, 0);
+}
