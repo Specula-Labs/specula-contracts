@@ -32,3 +32,6 @@ jobs:
       with:
         targets: wasm32-unknown-unknown
         components: rustfmt
+    - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249
+      with:
+        targets: wasm32-unknown-unknown
