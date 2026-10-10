@@ -84,6 +84,32 @@ fn admin_can_change_threshold_and_revoke_agents() {
     assert!(!client.is_agent(&agent));
 }
 
+
+#[test]
+fn revoked_agent_can_be_reauthorized_and_flag_again() {
+    let env = Env::default();
+    let contract_id = env.register(StellarSentinel, ());
+    let client = StellarSentinelClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    let agent = Address::generate(&env);
+    let subject = Address::generate(&env);
+    env.mock_all_auths();
+
+    client.initialize(&admin, &75);
+    assert!(!client.is_agent(&agent));
+
+    client.authorize_agent(&admin, &agent);
+    assert!(client.is_agent(&agent));
+    client.revoke_agent(&admin, &agent);
+    assert!(!client.is_agent(&agent));
+
+    client.authorize_agent(&admin, &agent);
+    assert!(client.is_agent(&agent));
+    client.flag_anomaly(&agent, &subject, &75);
+    assert_eq!(client.get_latest_flag(&subject).unwrap().score, 75);
+}
+
+
 #[test]
 fn latest_flag_is_empty_before_first_flag() {
     let env = Env::default();

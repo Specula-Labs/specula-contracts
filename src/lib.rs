@@ -65,6 +65,11 @@ impl StellarSentinel {
         env.storage()
             .persistent()
             .extend_ttl(&key, PERSISTENT_TTL_THRESHOLD, PERSISTENT_TTL_BUMP);
+        env.storage().persistent().extend_ttl(
+            &key,
+            PERSISTENT_TTL_THRESHOLD,
+            PERSISTENT_TTL_BUMP,
+        );
         bump_instance_ttl(&env);
     }
 
@@ -102,6 +107,15 @@ impl StellarSentinel {
                 .extend_ttl(&key, PERSISTENT_TTL_THRESHOLD, PERSISTENT_TTL_BUMP);
         }
         is_agent
+        let authorized: bool = env.storage().persistent().get(&key).unwrap_or(false);
+        if authorized {
+            env.storage().persistent().extend_ttl(
+                &key,
+                PERSISTENT_TTL_THRESHOLD,
+                PERSISTENT_TTL_BUMP,
+            );
+        }
+        authorized
     }
 
     /// Called by an authorized agent when it flags a transaction/address as
@@ -115,6 +129,7 @@ impl StellarSentinel {
             .persistent()
             .get(&agent_key)
             .unwrap_or(false);
+        let is_agent: bool = env.storage().persistent().get(&agent_key).unwrap_or(false);
         if !is_agent {
             panic!("not an authorized agent");
         }
@@ -132,6 +147,11 @@ impl StellarSentinel {
         if score < threshold {
             panic!("score below risk threshold");
         }
+        env.storage().persistent().extend_ttl(
+            &agent_key,
+            PERSISTENT_TTL_THRESHOLD,
+            PERSISTENT_TTL_BUMP,
+        );
         let key = DataKey::LatestFlag(subject.clone());
         let record = FlagRecord {
             agent: agent.clone(),
