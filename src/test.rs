@@ -162,6 +162,7 @@ fn set_threshold_accepts_zero() {
 #[should_panic(expected = "unauthorized")]
 fn set_threshold_rejects_non_admin() {
 fn flag_anomaly_emits_flagged_event() {
+fn revoked_agent_can_be_re_authorized() {
     let env = Env::default();
     let contract_id = env.register(StellarSentinel, ());
     let client = StellarSentinelClient::new(&env, &contract_id);
@@ -303,4 +304,16 @@ fn rejected_flag_anomaly_emits_no_event() {
     assert_eq!(env.events().all().len(), 0);
     client.initialize(&admin, &0);
     assert_eq!(client.get_threshold(), Some(0));
+    let agent = Address::generate(&env);
+    env.mock_all_auths();
+
+    client.initialize(&admin, &75);
+    client.authorize_agent(&admin, &agent);
+    assert!(client.is_agent(&agent));
+
+    client.revoke_agent(&admin, &agent);
+    assert!(!client.is_agent(&agent));
+
+    client.authorize_agent(&admin, &agent);
+    assert!(client.is_agent(&agent));
 }
