@@ -56,8 +56,7 @@ impl StellarSentinel {
     /// is not implemented yet — every authorized agent currently has full
     /// flagging rights. See CONTRIBUTING for the open issue.
     pub fn authorize_agent(env: Env, admin: Address, agent: Address) {
-        admin.require_auth();
-        require_admin(&env, &admin);
+        require_admin_auth(&env, &admin);
         env.storage().instance().set(&DataKey::Agent(agent), &true);
         bump_instance_ttl(&env);
     }
@@ -67,13 +66,16 @@ impl StellarSentinel {
         admin.require_auth();
         require_admin(&env, &admin);
         env.storage().instance().set(&DataKey::Agent(agent), &false);
+        require_admin_auth(&env, &admin);
+        env.storage()
+            .instance()
+            .set(&DataKey::Agent(agent), &false);
         bump_instance_ttl(&env);
     }
 
     /// Admin-only: update the accepted risk score threshold (0 through 100).
     pub fn set_threshold(env: Env, admin: Address, threshold: u32) {
-        admin.require_auth();
-        require_admin(&env, &admin);
+        require_admin_auth(&env, &admin);
         if threshold > MAX_SCORE {
             panic!("threshold must be between 0 and 100");
         }
@@ -154,6 +156,11 @@ impl StellarSentinel {
         bump_instance_ttl(&env);
         threshold
     }
+}
+
+fn require_admin_auth(env: &Env, admin: &Address) {
+    admin.require_auth();
+    require_admin(env, admin);
 }
 
 fn require_admin(env: &Env, admin: &Address) {
