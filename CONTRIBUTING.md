@@ -16,3 +16,4 @@ cargo clippy --all-targets -- -D warnings
 ## Related repos
 - [specula-api](https://github.com/Specula-Labs/specula-api) — reads contract events and exposes them through its API; it does not currently submit transactions.
 - [specula-app](https://github.com/Specula-Labs/specula-app) — dashboard displaying screening results and backend-provided contract events.
+- [specula-api](https://github.com/Specula-Labs/specula-api) — the documented public backend repository for this contract.

@@ -72,6 +72,7 @@ These commands create a **new** identity and contract instance; they do not rede
 
 ```bash
 stellar keys generate specula-admin --network testnet --fund --secure-store
+cargo generate-lockfile
 stellar contract build --locked
 stellar contract deploy \
   --wasm target/wasm32v1-none/release/sentinel_contract.wasm \
@@ -102,6 +103,7 @@ Set the resulting contract ID as the backend's `CONTRACT_ID`. Keep its Horizon a
 - `src/lib.rs` — contract entry points, storage keys, authorization, threshold checks, event publication, and latest-flag lookup.
 - `src/test.rs` — contract behavior tests using Soroban test utilities.
 - `Cargo.toml` — Rust and Soroban SDK dependencies.
+- `Cargo.toml` — Rust and Soroban SDK dependencies (`Cargo.lock` is generated locally and ignored by Git).
 - `.github/workflows/ci.yml` — Wasm build, unit tests, and Clippy checks.
 
 ## Prerequisites
@@ -129,6 +131,7 @@ Requires stable Rust, the `wasm32-unknown-unknown` and `wasm32v1-none` targets, 
 ```bash
 rustup target add wasm32-unknown-unknown wasm32v1-none
 cargo build --target wasm32-unknown-unknown --release
+cargo generate-lockfile
 stellar contract build --locked
 cargo test
 cargo clippy --all-targets -- -D warnings
