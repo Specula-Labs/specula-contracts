@@ -1,6 +1,9 @@
 #![cfg(test)]
+extern crate std;
 use super::*;
 use soroban_sdk::testutils::Address as _;
+use soroban_sdk::testutils::Events;
+use soroban_sdk::{symbol_short, Symbol, TryFromVal};
 
 #[test]
 fn test_initialize_and_threshold() {
@@ -158,6 +161,7 @@ fn agent_cannot_submit_score_above_100() {
 fn set_threshold_accepts_zero() {
 #[should_panic(expected = "unauthorized")]
 fn set_threshold_rejects_non_admin() {
+fn flag_anomaly_emits_flagged_event() {
     let env = Env::default();
     let contract_id = env.register(StellarSentinel, ());
     let client = StellarSentinelClient::new(&env, &contract_id);
@@ -226,6 +230,36 @@ fn zero_threshold_accepts_zero_score() {
 #[test]
 #[should_panic(expected = "unauthorized")]
 fn revoke_agent_rejects_non_admin() {
+    let agent = Address::generate(&env);
+    let subject = Address::generate(&env);
+    env.mock_all_auths();
+
+    client.initialize(&admin, &75);
+    client.authorize_agent(&admin, &agent);
+    client.flag_anomaly(&agent, &subject, &90);
+
+    let events = env.events().all();
+    assert_eq!(events.len(), 1);
+    let (_contract, topics, data) = events.get(0).unwrap();
+    assert_eq!(topics.len(), 3);
+    assert_eq!(
+        Symbol::try_from_val(&env, &topics.get(0).unwrap()).unwrap(),
+        symbol_short!("flagged")
+    );
+    assert_eq!(
+        Address::try_from_val(&env, &topics.get(1).unwrap()).unwrap(),
+        agent
+    );
+    assert_eq!(
+        Address::try_from_val(&env, &topics.get(2).unwrap()).unwrap(),
+        subject
+    );
+    assert_eq!(u32::try_from_val(&env, &data).unwrap(), 90);
+    assert_eq!(client.get_latest_flag(&subject).unwrap().score, 90);
+}
+
+#[test]
+fn rejected_flag_anomaly_emits_no_event() {
     let env = Env::default();
     let contract_id = env.register(StellarSentinel, ());
     let client = StellarSentinelClient::new(&env, &contract_id);
@@ -249,4 +283,13 @@ fn revoke_agent_rejects_non_admin() {
     client.authorize_agent(&admin, &agent);
     // Non-admin is rejected by require_admin.
     client.revoke_agent(&stranger, &agent);
+    client.initialize(&admin, &75);
+    assert_eq!(env.events().all().len(), 0);
+
+    // An address that was never authorized must panic before publishing.
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        client.flag_anomaly(&agent, &subject, &90);
+    }));
+    assert!(result.is_err());
+    assert_eq!(env.events().all().len(), 0);
 }
