@@ -19,6 +19,29 @@ fn test_initialize_and_threshold() {
     assert!(!client.is_agent(&admin));
 }
 
+
+#[test]
+#[should_panic(expected = "not initialized")]
+fn get_threshold_rejects_uninitialized_contract() {
+    let env = Env::default();
+    let contract_id = env.register(StellarSentinel, ());
+    let client = StellarSentinelClient::new(&env, &contract_id);
+
+    client.get_threshold();
+}
+
+#[test]
+fn get_threshold_preserves_legitimate_zero() {
+    let env = Env::default();
+    let contract_id = env.register(StellarSentinel, ());
+    let client = StellarSentinelClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    env.mock_all_auths();
+
+    client.initialize(&admin, &0);
+    assert_eq!(client.get_threshold(), 0);
+}
+
 #[test]
 #[should_panic(expected = "already initialized")]
 fn initialization_is_one_time() {
