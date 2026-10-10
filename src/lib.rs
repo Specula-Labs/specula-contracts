@@ -154,6 +154,11 @@ impl StellarSentinel {
             .get(&DataKey::RiskThreshold)
             .unwrap_or(0);
         bump_instance_ttl(&env);
+    pub fn get_threshold(env: Env) -> Option<u32> {
+        let threshold = env.storage().instance().get(&DataKey::RiskThreshold);
+        if threshold.is_some() {
+            bump_instance_ttl(&env);
+        }
         threshold
     }
 }
