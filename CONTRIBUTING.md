@@ -3,6 +3,7 @@
 ## Setup
 ```
 cargo build --target wasm32-unknown-unknown --release
+cargo fmt --all -- --check
 cargo test
 cargo clippy --all-targets
 ```

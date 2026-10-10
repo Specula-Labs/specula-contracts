@@ -66,9 +66,7 @@ impl StellarSentinel {
     pub fn revoke_agent(env: Env, admin: Address, agent: Address) {
         admin.require_auth();
         require_admin(&env, &admin);
-        env.storage()
-            .instance()
-            .set(&DataKey::Agent(agent), &false);
+        env.storage().instance().set(&DataKey::Agent(agent), &false);
         bump_instance_ttl(&env);
     }
 
@@ -124,14 +122,11 @@ impl StellarSentinel {
             timestamp: env.ledger().timestamp(),
         };
         env.storage().persistent().set(&key, &record);
-        env.storage().persistent().extend_ttl(
-            &key,
-            PERSISTENT_TTL_THRESHOLD,
-            PERSISTENT_TTL_BUMP,
-        );
+        env.storage()
+            .persistent()
+            .extend_ttl(&key, PERSISTENT_TTL_THRESHOLD, PERSISTENT_TTL_BUMP);
         bump_instance_ttl(&env);
-        env.events()
-            .publish((FLAG_EVENT, agent, subject), score);
+        env.events().publish((FLAG_EVENT, agent, subject), score);
     }
 
     /// Return the latest recorded flag for a subject, if one exists.
@@ -151,7 +146,8 @@ impl StellarSentinel {
     }
 
     pub fn get_threshold(env: Env) -> u32 {
-        let threshold = env.storage()
+        let threshold = env
+            .storage()
             .instance()
             .get(&DataKey::RiskThreshold)
             .unwrap_or(0);
